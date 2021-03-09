@@ -17,15 +17,13 @@ ENV BUNDLE_PATH=/bundle \
     GEM_HOME=/bundle
 ENV PATH="${BUNDLE_BIN}:${PATH}"
 
-{% if bundler %}
-RUN gem install bundler -v {{ bundler }}
-{% endif %}
+{% if bundler %}RUN gem install bundler -v {{ bundler }}{% endif %}
 
 # TODO: Add production stage
 
 FROM dev AS release
 
-COPY Gemfile Gemfile.lock ./
+COPY Gemfile Gemfile.lock{% if gemspec%} {{gemspec}}{% endif %} ./
 
 RUN bundle install --jobs 2 --retry 1
 
