@@ -1,4 +1,4 @@
-FROM ruby:2.6.6-alpine AS dev
+FROM ruby:{{ruby | default: "2.7.2"}}-alpine AS dev
 
 RUN apk update \
   && apk upgrade \
@@ -17,7 +17,9 @@ ENV BUNDLE_PATH=/bundle \
     GEM_HOME=/bundle
 ENV PATH="${BUNDLE_BIN}:${PATH}"
 
-RUN gem install bundler -v 1.17.3
+{% if bundler %}
+RUN gem install bundler -v {{ bundler }}
+{% endif %}
 
 # TODO: Add production stage
 
