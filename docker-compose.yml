@@ -1,0 +1,53 @@
+version: "{{docker_compose_version | default: '3.7'}}"
+
+volumes:
+  bundle:
+  {% if postgres -%}
+  db-data-pg:
+  {% endif -%}
+  {% if rabbitmq -%}
+  rabbitmq-data:
+  {% endif %}
+
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    entrypoint: "sh docker-entrypoint.sh"
+    command: "ruby -e 'puts puts %{Hello World}'"
+    tty: true
+    stdin_open: true
+    env_file:
+      - .env
+    volumes:
+      - .:/usr/src/app
+      - bundle:/bundle
+    ports:
+      - "3016:3016"
+    depends_on:
+      {% if rabbitmq -%}
+      - rabbitmq
+      {% endif -%}
+      {% if postgres -%}
+      - postgres
+      {% endif -%}
+      {% if redis -%}
+      - redis
+      {% endif %}
+  {% if postgres -%}
+  postgres:
+    image: postgres:9.6.11
+    volumes:
+      - db-data-pg:/var/lib/postgresql
+  {% endif %}
+  {% if redis -%}
+  redis:
+    image: redis
+  {% endif -%}
+  {% if rabbitmq %}
+  rabbitmq:
+    image: rabbitmq:3-management
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+  {% endif -%}
